@@ -1,2 +1,2 @@
-# techTFQ_SQL_challenge
+# Solutions to techTFQ SQL excercises 
 SQL practice 
