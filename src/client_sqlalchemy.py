@@ -1,7 +1,7 @@
-import sqlalchemy
-from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy import exc
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -13,19 +13,22 @@ from pprint import pprint
 
 def command_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-D', '--dir', required=True,
+                        help='Path to query files')
     parser.add_argument('-q', '--query', required=True,
-                        help='Path to query file')
+                        help='Query file')
     args = parser.parse_args()
     return args
 
 
-def fetch_result(query: str, commit: bool = False) -> list:
+def fetch_result(table_query: str, main_query: str) -> list:
     """
-    Connects to the database, executes the given query, and returns the result.
+    Connects to the database, creates a table, 
+    executes the main query over the table, and returns the result.
 
     Args:
-        query: The SQL query to execute.
-        commit: If True, commit the transaction after executing the query.
+        table_query: SQL query for table creation.
+        main_query: The main SQL query to execute.
 
     Returns:
         A list of tuples representing the result of the query.
@@ -51,10 +54,9 @@ def fetch_result(query: str, commit: bool = False) -> list:
             )
         )
 
-        with Session(engine) as session:
-            with engine.connect() as db_conn:
-                df = pd.read_sql_query(sql=query, con=db_conn)
-            session.commit()
+        with engine.connect() as db_conn:
+            db_conn.execute(text(table_query))
+            df = pd.read_sql_query(sql=text(main_query), con=db_conn)
 
     except (Exception, exc.SQLAlchemyError) as error:
         print("Error fetching data from PostgreSQL table", error)
@@ -65,7 +67,9 @@ def fetch_result(query: str, commit: bool = False) -> list:
 
 if __name__ == "__main__":
     args = command_args()
-    with open(args.query, 'r') as query_f:
-        query = query_f.read()
-    data = fetch_result(query, commit=True)
+    with open(args.dir + 'make_table.sql', 'r') as query_f:
+        table_query = query_f.read()
+    with open(args.dir + args.query, 'r') as query_f:
+        main_query = query_f.read()
+    data = fetch_result(table_query, main_query)
     pprint(data)
