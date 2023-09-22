@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy import exc
 from sqlalchemy import text
-from sqlalchemy.orm import Session
 
 import pandas as pd
 from dotenv import load_dotenv
