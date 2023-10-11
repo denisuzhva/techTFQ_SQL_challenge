@@ -13,7 +13,7 @@
             "cwd": "${fileDirname}",
             "justMyCode": true,
             "args": [
-                "-D=../tasks/complex_Q9_top_2_unique_patients/",
+                "-D=../tasks/Big_4_Interview_Question/",
                 "-q=solution.sql",
             ]
         }
